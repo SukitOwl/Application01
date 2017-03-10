@@ -1,0 +1,125 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<style>
+    #page {
+        height: 100%;
+        width: 100%;
+    }
+
+    #outter {
+        width: 256px;
+        margin: auto;
+        margin-top: 175px;
+    }
+
+    img {
+        width: 256px;
+    }
+
+    #login-button, #logout-button {
+        width: 256px;
+        height: 30px;
+        text-align: center;
+        font-size: 17px;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        vertical-align: middle;
+        line-height: 30px;
+        border: solid #c5d830;
+        border-radius: 15px;
+        margin-top: 50px;
+        color: white;
+        background-color: #c5d830;
+    }
+
+        #login-button:hover, #logout-button:hover {
+            color: #c5d830;
+            cursor: pointer;
+            background-color: white;
+        }
+
+    #footer {
+        position: absolute;
+        color: gray;
+        left: 10px;
+        bottom: 10px;
+    }
+
+    #error {
+        display: none;
+    }
+</style>
+
+<script src="~/scripts/jquery-1.10.2.js"></script>
+<script>
+    $(document).ready(function () {
+        var error = $("#error").text();
+        if (error.trim().length>0)
+        {
+            alert("Error:"+error);
+        }
+    });
+
+    function RedirectToIdpServer(reason)
+    {
+        //window.location = "/SSOAuthentication/RedirectToIdpServer";
+        data = {};
+        data["reason"] = reason;
+
+        $.ajax({
+            url: "/SSOAuthentication/RedirectToIdpServer",
+            data: data,
+            type: 'GET',
+            success: function (data) {
+
+                if (data["Status"] == "AlreadyLogin") {
+                    window.location.href = "/Home/Index";
+                }
+                else {
+                    $("form").attr("action", data["IDPURL"]);
+                    $("input[name=SAMLRequest]").attr("value", data["SAMLRequest"]);
+                    setTimeout(function () { document.forms[0].submit(); }, 500);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log('Login error : ' + xhr.status);
+            }
+        });
+    }
+</script>
+
+<html>
+<head>
+    <meta http-equiv="Cache-control" content="no-store">
+    <title>Index</title>
+</head>
+<body>
+
+    <form autocomplete="off" method="post">
+        <p>
+            <input type="hidden" name="SAMLRequest">
+        </p>
+    </form>
+
+    <!--<h4 id="error" style="display:none">@ViewBag.ErrorMessage</h4>-->
+    <div id="page">
+        <div id="outter">
+            <img style="width: 100%;" src="/images/wso2carbon.png" />
+
+            <div onclick='RedirectToIdpServer("login")' id="login-button">Single Sign On</div>
+
+            <div onclick='RedirectToIdpServer("logout")' id="logout-button">Single Sign Out</div>
+
+            <div id="error">@ViewBag.ErrorMessage</div>
+
+        </div>
+        <div id="footer">Copyright © IT & VAS Application Diagram</div>
+    </div>
+
+    <!--<a href="/SSOAuthentication/SingleLogout"><button>Click me</button></a>-->
+</body>
+</html>
+

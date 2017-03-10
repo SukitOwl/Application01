@@ -1,0 +1,54 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>SingleLogout</title>
+</head>
+<body>
+
+    <p>This page will redirect you to sso logout url if not please press button post</p>
+    <button onclick="RedirectToIdpServer()">post</button>
+
+    <form autocomplete="off" method="post">
+        <p>
+            <input type="hidden" name="SAMLRequest">
+        </p>
+    </form>
+
+
+</body>
+</html>
+
+<script src="~/scripts/jquery-1.10.2.js"></script>
+<script>
+    $(document).ready(function () {
+        RedirectToIdpServer();
+    });
+
+    function RedirectToIdpServer()
+    {
+        //window.location = "/SSOAuthentication/RedirectToIdpServer";
+        data = {};
+        data["reason"] = "logout";
+
+        $.ajax({
+            url: "/SSOAuthentication/RedirectToIdpServer",
+            data: data,
+            type: 'GET',
+            success: function (data) {
+                $("form").attr("action", data["IDPURL"]);
+                $("input[name=SAMLRequest]").attr("value", data["SAMLRequest"]);
+                setTimeout(function () { document.forms[0].submit(); }, 500);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log('Logout error : ' + xhr.status);
+            }
+        });
+    }
+</script>
